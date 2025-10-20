@@ -36,7 +36,10 @@ jQuery(document).ready(function($) {
     
     // ===== FILE UPLOAD HANDLING =====
     var uploadedAttachmentId = 0;
-    var pastedFile = null;
+    // Make pastedFile globally accessible for use across different scopes
+    if (typeof window.pastedFile === 'undefined') {
+        window.pastedFile = null;
+    }
     
     // Clipboard paste handler - Capture pasted images
     $(document).on('paste', '.user-feedback-form, #user-feedback-quick-form', function(e) {
@@ -51,7 +54,7 @@ jQuery(document).ready(function($) {
                 
                 // Create a File object from the blob
                 var fileName = 'pasted-image-' + Date.now() + '.png';
-                pastedFile = new File([blob], fileName, { type: blob.type });
+                window.pastedFile = new File([blob], fileName, { type: blob.type });
                 
                 // Show preview
                 var reader = new FileReader();
@@ -79,7 +82,7 @@ jQuery(document).ready(function($) {
     // File input change handler - Show preview
     $('.user-feedback-file-input').on('change', function() {
         // Clear any pasted file when user selects a new file
-        pastedFile = null;
+        window.pastedFile = null;
         var $input = $(this);
         var $container = $input.closest('.user-feedback-field, .user-feedback-form-container, .user-feedback-quick-content');
         var $preview = $container.find('.user-feedback-file-preview, .user-feedback-file-preview-quick');
@@ -127,7 +130,8 @@ jQuery(document).ready(function($) {
     });
     
     // Function to upload file via AJAX
-    function uploadScreenshot($fileInput, callback) {
+    // Expose globally so it can be accessed from different scopes
+    window.uploadScreenshot = function uploadScreenshot($fileInput, callback) {
         var fileToUpload = null;
         
         // Check for pasted file first
@@ -451,7 +455,8 @@ jQuery(document).ready(function($) {
 jQuery(document).ready(function($) {
     
     // Function to collect technical metadata
-    function collectTechnicalMetadata() {
+    // Expose globally so menu links can access it
+    window.collectTechnicalMetadata = function collectTechnicalMetadata() {
         var metadata = {
             pageUrl: window.location.href,
             pageTitle: document.title,
@@ -479,7 +484,8 @@ jQuery(document).ready(function($) {
     }
     
     // Function to display technical metadata
-    function displayTechnicalMetadata(metadata) {
+    // Expose globally so menu links can access it
+    window.displayTechnicalMetadata = function displayTechnicalMetadata(metadata) {
         var html = '';
         
         html += '<div class="technical-detail-item">';
@@ -545,7 +551,8 @@ jQuery(document).ready(function($) {
     }
     
     // HTML escape function
-    function escapeHtml(text) {
+    // Expose globally so menu links can access it
+    window.escapeHtml = function escapeHtml(text) {
         var map = {
             '&': '&amp;',
             '<': '&lt;',

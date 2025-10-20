@@ -78,6 +78,7 @@ function user_feedback_settings_page() {
         update_option('user_feedback_quick_collector_label', sanitize_text_field($_POST['quick_collector_label']));
         update_option('user_feedback_quick_collector_show_details', isset($_POST['quick_collector_show_details']) ? '1' : '0');
         update_option('user_feedback_quick_collector_capture_errors', isset($_POST['quick_collector_capture_errors']) ? '1' : '0');
+        update_option('user_feedback_menu_link_enabled', isset($_POST['menu_link_enabled']) ? '1' : '0');
         
         // Attachment settings
         update_option('user_feedback_enable_attachments', isset($_POST['enable_attachments']) ? '1' : '0');
@@ -101,6 +102,7 @@ function user_feedback_settings_page() {
     $quick_collector_label = get_option('user_feedback_quick_collector_label', 'Quick Feedback');
     $quick_collector_show_details = get_option('user_feedback_quick_collector_show_details', '1');
     $quick_collector_capture_errors = get_option('user_feedback_quick_collector_capture_errors', '1');
+    $menu_link_enabled = get_option('user_feedback_menu_link_enabled', '1');
     
     // Attachment settings
     $enable_attachments = get_option('user_feedback_enable_attachments', '1');
@@ -262,6 +264,36 @@ function user_feedback_settings_page() {
                             </label>
                         </fieldset>
                         <p class="description">Technical details include: page URL, browser info, screen size, timezone, and console errors</p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th scope="row">Enable Navigation Menu Link</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" 
+                                   name="menu_link_enabled" 
+                                   value="1" 
+                                   <?php checked($menu_link_enabled, '1'); ?>>
+                            Allow adding feedback modal links to navigation menus
+                        </label>
+                        <p class="description">
+                            When enabled, you can add a feedback link to any menu. 
+                            <a href="<?php echo esc_url(admin_url('nav-menus.php')); ?>" class="button button-small" style="vertical-align: baseline;">Go to Menus</a>
+                        </p>
+                        
+                        <?php if ($menu_link_enabled === '1'): ?>
+                        <div style="background: #f0f6fc; border-left: 4px solid #0073aa; padding: 12px; margin-top: 10px;">
+                            <p style="margin: 0 0 10px 0;"><strong>📝 How to add feedback link to your menu:</strong></p>
+                            <ol style="margin: 0 0 0 20px; line-height: 1.8;">
+                                <li>Go to <strong>Appearance &gt; Menus</strong></li>
+                                <li>Find <strong>"Custom Links"</strong> section in the left sidebar</li>
+                                <li>URL: <code style="background: #fff; padding: 2px 6px; border: 1px solid #ddd;">#user-feedback-modal</code></li>
+                                <li>Link Text: <strong>Feedback</strong> (or any text you want)</li>
+                                <li>Click "Add to Menu" and save</li>
+                            </ol>
+                        </div>
+                        <?php endif; ?>
                     </td>
                 </tr>
             </table>

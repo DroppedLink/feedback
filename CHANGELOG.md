@@ -5,6 +5,44 @@ All notable changes to the User Feedback & Bug Reports plugin will be documented
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-10-20
+
+### Added
+- **Navigation Menu Link Integration**: Add feedback modal trigger to any WordPress navigation menu
+  - Uses WordPress's built-in Custom Links feature (`#user-feedback-modal`)
+  - Customizable menu link text (use any text you want)
+  - Opens the same modal as Quick Feedback Collector
+  - All features work identically (attachments, technical data, etc.)
+  - Can be added to header, footer, or any menu location
+  - Optional CSS class `.user-feedback-menu-trigger` for custom styling
+  - Helpful admin notices with step-by-step instructions on Menus page
+  - Instructions displayed in Settings page when enabled
+  - Works alongside existing Quick Collector button
+- **Menu Link Settings**: New option to enable/disable navigation menu link feature
+  - Added to Quick Feedback Collector settings section
+  - Enabled by default for easy setup
+- **Global JavaScript Functions**: Technical metadata functions exposed globally
+  - Allows menu link and other integrations to access data collection
+  - `window.collectTechnicalMetadata()` for gathering page/browser info
+  - `window.displayTechnicalMetadata()` for formatting display
+  - `window.escapeHtml()` utility function
+
+### Changed
+- Modal automatically outputs when menu link enabled (even if Quick Collector disabled)
+- JavaScript handlers updated to work with both admin bar and menu links
+- Settings page reorganized with menu link option
+- Documentation updated with navigation menu instructions
+
+### Technical
+- Added `includes/menu-link.php` for menu integration
+- JavaScript handler for links with href `#user-feedback-modal`
+- Automatic modal fallback when Quick Collector disabled
+- Menu link script hooks to wp_footer and admin_footer
+- Admin notice on Menus page with step-by-step instructions
+- Settings page includes inline instructions when enabled
+- Body class `user-feedback-menu-enabled` added when active
+- Created MENU_LINK_GUIDE.md with detailed instructions
+
 ## [1.2.1] - 2025-10-16
 
 ### Added

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: User Feedback & Bug Reports
  * Description: Manage user feedback, comments, and bug reports with email notifications and detailed status tracking
- * Version: 1.2.1
+ * Version: 1.3.0
  * Author: Your Name
  */
 
@@ -12,7 +12,7 @@ if (!defined('WPINC')) {
 }
 
 // Define constants
-define('USER_FEEDBACK_VERSION', '1.2.1');
+define('USER_FEEDBACK_VERSION', '1.3.0');
 define('USER_FEEDBACK_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('USER_FEEDBACK_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -27,6 +27,7 @@ require_once USER_FEEDBACK_PLUGIN_DIR . 'includes/canned-responses.php';
 require_once USER_FEEDBACK_PLUGIN_DIR . 'includes/widget.php';
 require_once USER_FEEDBACK_PLUGIN_DIR . 'includes/quick-collector.php';
 require_once USER_FEEDBACK_PLUGIN_DIR . 'includes/upload-handler.php';
+require_once USER_FEEDBACK_PLUGIN_DIR . 'includes/menu-link.php';
 
 // Activation hook
 register_activation_hook(__FILE__, 'user_feedback_activate');

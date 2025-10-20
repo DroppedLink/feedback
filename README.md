@@ -7,6 +7,7 @@ A comprehensive WordPress plugin for managing user feedback, comments, and bug r
 - **Dual Submission Types**: Handle both comments/questions and bug reports
 - **User Authentication**: Requires users to be logged in to submit feedback
 - **Quick Feedback Collector**: One-click feedback button in admin bar with auto-collected technical data
+- **Navigation Menu Link**: Add feedback modal trigger to any navigation menu
 - **Screenshot Attachments**: Users can attach screenshots to help illustrate bugs and feedback
 - **Advanced Data Collection**: Automatically captures page URL, browser info, screen size, console errors, and more
 - **Email Notifications**: Automated emails for new submissions, replies, and resolutions
@@ -99,6 +100,39 @@ The Quick Feedback Collector adds a one-click feedback button to the WordPress a
 - Identifies page-specific issues
 - Tracks console errors that users may not notice
 - Provides context for better support
+
+### Navigation Menu Link
+
+You can add a feedback modal trigger to any WordPress navigation menu, making it easy for visitors to submit feedback from your site's navigation.
+
+**To Enable:**
+1. Go to **User Feedback > Settings**
+2. Scroll to **Quick Feedback Collector** section
+3. Ensure **Enable Navigation Menu Link** is checked
+4. Save settings
+
+**To Add to a Menu:**
+1. Go to **Appearance > Menus**
+2. Scroll to **"Custom Links"** in the left sidebar
+3. URL: Enter `#user-feedback-modal`
+4. Link Text: Enter `Feedback` (or any text you prefer)
+5. Click **"Add to Menu"**
+6. Save your menu
+
+**How It Works:**
+- The menu link appears in your site navigation wherever you place it
+- Clicking the link opens the same feedback modal as the Quick Collector
+- All features work identically (attachments, technical data, etc.)
+- Only logged-in users can submit feedback
+- The link can be styled with custom CSS using class `.user-feedback-menu-trigger`
+
+**Use Cases:**
+- Make feedback more visible to site visitors
+- Add to header, footer, or sidebar menus
+- Create dedicated "Help" or "Support" menu sections
+- Complement the admin bar button for better accessibility
+
+For detailed instructions, see [MENU_LINK_GUIDE.md](MENU_LINK_GUIDE.md)
 
 ### Screenshot Attachments
 
@@ -294,6 +328,9 @@ user-feedback/
 │   ├── ajax-handler.php        # AJAX handlers
 │   ├── shortcode.php           # Shortcode implementation
 │   ├── widget.php              # Widget implementation
+│   ├── quick-collector.php     # Quick feedback modal
+│   ├── menu-link.php           # Navigation menu integration
+│   ├── upload-handler.php      # File upload handling
 │   └── email-handler.php       # Email notifications
 ├── assets/
 │   ├── css/
@@ -302,6 +339,8 @@ user-feedback/
 │       └── script.js           # Frontend & admin JavaScript
 ├── uninstall.php               # Cleanup on deletion
 ├── README.md                   # This file
+├── MENU_LINK_GUIDE.md          # Navigation menu link guide
+├── QUICK_START.md              # Quick start guide
 └── CHANGELOG.md                # Version history
 ```
 
