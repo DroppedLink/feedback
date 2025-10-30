@@ -41,6 +41,31 @@ jQuery(document).ready(function($) {
         window.pastedFile = null;
     }
     
+    function getAllowedMimeTypes() {
+        if (typeof userFeedback === 'undefined') {
+            return [];
+        }
+        return Array.isArray(userFeedback.allowedMimeTypes) ? userFeedback.allowedMimeTypes : [];
+    }
+
+    function getAllowedFileTypes() {
+        if (typeof userFeedback === 'undefined') {
+            return [];
+        }
+        return Array.isArray(userFeedback.allowedFileTypes) ? userFeedback.allowedFileTypes : [];
+    }
+
+    function getMaxFileSizeBytes() {
+        if (typeof userFeedback === 'undefined') {
+            return 5 * 1024 * 1024;
+        }
+        var maxBytes = parseInt(userFeedback.maxFileSizeBytes, 10);
+        if (isNaN(maxBytes) || maxBytes <= 0) {
+            maxBytes = 5 * 1024 * 1024;
+        }
+        return maxBytes;
+    }
+
     // Clipboard paste handler - Capture pasted images
     $(document).on('paste', '.user-feedback-form, #user-feedback-quick-form', function(e) {
         var items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -90,17 +115,19 @@ jQuery(document).ready(function($) {
         
         if (file) {
             // Validate file type
-            var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            if (allowedTypes.indexOf(file.type) === -1) {
-                alert('Please select an image file (JPEG, PNG, GIF, or WebP)');
+            var allowedTypes = getAllowedMimeTypes();
+            if (allowedTypes.length && allowedTypes.indexOf(file.type) === -1) {
+                var allowedExtensions = getAllowedFileTypes().join(', ');
+                alert('Please select an allowed image type (' + (allowedExtensions || 'JPEG, PNG, GIF, WebP') + ')');
                 $input.val('');
                 return;
             }
             
             // Validate file size
-            var maxSize = 5 * 1024 * 1024; // 5MB default
+            var maxSize = getMaxFileSizeBytes();
             if (file.size > maxSize) {
-                alert('File size exceeds maximum allowed size');
+                var maxMb = Math.round((maxSize / 1024 / 1024) * 10) / 10;
+                alert('File size exceeds maximum allowed size (' + maxMb + ' MB)');
                 $input.val('');
                 return;
             }
@@ -126,7 +153,7 @@ jQuery(document).ready(function($) {
         $preview.hide();
         $preview.find('img').attr('src', '');
         uploadedAttachmentId = 0;
-        pastedFile = null;
+        window.pastedFile = null;
     });
     
     // Function to upload file via AJAX
@@ -135,8 +162,8 @@ jQuery(document).ready(function($) {
         var fileToUpload = null;
         
         // Check for pasted file first
-        if (pastedFile) {
-            fileToUpload = pastedFile;
+        if (window.pastedFile) {
+            fileToUpload = window.pastedFile;
         }
         // Then check file input
         else if ($fileInput && $fileInput.length > 0 && $fileInput[0] && $fileInput[0].files && $fileInput[0].files.length > 0) {
@@ -227,7 +254,7 @@ jQuery(document).ready(function($) {
                         $message.removeClass('error').addClass('success').text(response.data.message).show();
                         $form[0].reset();
                         $('.user-feedback-file-preview').hide();
-                        pastedFile = null;
+                        window.pastedFile = null;
                     } else {
                         $message.removeClass('success').addClass('error').text(response.data.message).show();
                     }
@@ -564,21 +591,28 @@ jQuery(document).ready(function($) {
     }
     
     // Open Quick Feedback Modal when admin bar button is clicked
-    $(document).on('click', '#wp-admin-bar-user-feedback-quick a', function(e) {
-        e.preventDefault();
+    function openQuickFeedbackModal() {
         $('#user-feedback-quick-modal').fadeIn();
-        
-        // Collect and display technical metadata
-        if (typeof userFeedback !== 'undefined' && 
-            userFeedback.quickCollector && 
+
+        if (typeof userFeedback !== 'undefined' &&
+            userFeedback.quickCollector &&
             userFeedback.quickCollector.showDetails) {
             var metadata = collectTechnicalMetadata();
             var html = displayTechnicalMetadata(metadata);
             $('#ufq-technical-preview').html(html);
         }
-        
-        // Focus on subject field
+
         $('#ufq-subject').focus();
+    }
+
+    $(document).on('click', '#wp-admin-bar-user-feedback-quick a', function(e) {
+        e.preventDefault();
+        openQuickFeedbackModal();
+    });
+
+    $(document).on('click', '.user-feedback-floating-button', function(e) {
+        e.preventDefault();
+        openQuickFeedbackModal();
     });
     
     // Close modal
@@ -650,7 +684,7 @@ jQuery(document).ready(function($) {
                                .text(response.data.message).show();
                         $form[0].reset();
                         $('.user-feedback-file-preview-quick').hide();
-                        pastedFile = null;
+                        window.pastedFile = null;
                         
                         // Close modal after 2 seconds
                         setTimeout(function() {

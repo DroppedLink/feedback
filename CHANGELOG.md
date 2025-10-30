@@ -5,6 +5,25 @@ All notable changes to the User Feedback & Bug Reports plugin will be documented
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2025-10-30
+
+### Added
+- **Floating Quick Feedback Button**: Accessible pill-style launcher for logged-in users on every page, even when the admin bar is hidden
+- **Dynamic Asset Registration**: Core CSS/JS registered once and reused across admin/front-end contexts with centralized localization
+- **Helper Utilities**: New `includes/helpers.php` consolidates feature toggles, file limits, and metadata sanitation
+
+### Changed
+- Reworked script localization so attachment limits, MIME types, and quick-collector settings stay in sync everywhere
+- Quick Collector modal inherits customized button label and attachment limits from settings
+- Menu link integration now reuses helper checks for consistent enable/disable logic
+- Front-end validations respect admin-configured file size and MIME settings with clearer error messaging
+- Cancel buttons restyled for proper contrast in the modal UI
+
+### Fixed
+- Preserved JSON metadata captured by Quick Collector by sanitizing recursively instead of using `sanitize_text_field`
+- Ensured admin/global assets load when quick collector or menu link features are enabled, avoiding broken buttons off plugin pages
+- Cleanup on uninstall now removes all quick collector and attachment options
+
 ## [1.3.0] - 2025-10-20
 
 ### Added

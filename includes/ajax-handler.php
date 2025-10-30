@@ -24,11 +24,11 @@ function user_feedback_submit_handler() {
     }
     
     // Sanitize input
-    $type = sanitize_text_field($_POST['type']);
-    $subject = sanitize_text_field($_POST['subject']);
-    $message = sanitize_textarea_field($_POST['message']);
-    $context_id = isset($_POST['context_id']) ? sanitize_text_field($_POST['context_id']) : '';
-    $metadata = isset($_POST['metadata']) ? sanitize_text_field($_POST['metadata']) : '';
+    $type = isset($_POST['type']) ? sanitize_text_field(wp_unslash($_POST['type'])) : '';
+    $subject = isset($_POST['subject']) ? sanitize_text_field(wp_unslash($_POST['subject'])) : '';
+    $message = isset($_POST['message']) ? sanitize_textarea_field(wp_unslash($_POST['message'])) : '';
+    $context_id = isset($_POST['context_id']) ? sanitize_text_field(wp_unslash($_POST['context_id'])) : '';
+    $metadata = isset($_POST['metadata']) ? user_feedback_normalize_metadata($_POST['metadata']) : '';
     $attachment_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
     
     // Validate required fields

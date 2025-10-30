@@ -223,9 +223,9 @@ function user_feedback_settings_page() {
                                    name="quick_collector_enabled" 
                                    value="1" 
                                    <?php checked($quick_collector_enabled, '1'); ?>>
-                            Add a quick feedback button to the WordPress admin bar
+                            Display a floating quick feedback button for logged-in users (also available in the admin bar)
                         </label>
-                        <p class="description">When enabled, logged-in users will see a feedback button in the top admin bar that automatically collects page context.</p>
+                        <p class="description">When enabled, logged-in users will see a pill-shaped feedback button that floats on every page, even if the admin bar is hidden. The admin bar shortcut remains available for users who can see it.</p>
                     </td>
                 </tr>
                 
@@ -239,7 +239,7 @@ function user_feedback_settings_page() {
                                name="quick_collector_label" 
                                value="<?php echo esc_attr($quick_collector_label); ?>" 
                                class="regular-text">
-                        <p class="description">Text displayed on the admin bar button</p>
+                        <p class="description">Text displayed on both the floating button and the admin bar shortcut.</p>
                     </td>
                 </tr>
                 

@@ -21,6 +21,14 @@ delete_option('user_feedback_comment_label');
 delete_option('user_feedback_bug_label');
 delete_option('user_feedback_submit_button_text');
 delete_option('user_feedback_db_version');
+delete_option('user_feedback_enable_attachments');
+delete_option('user_feedback_max_file_size');
+delete_option('user_feedback_allowed_file_types');
+delete_option('user_feedback_quick_collector_enabled');
+delete_option('user_feedback_quick_collector_label');
+delete_option('user_feedback_quick_collector_show_details');
+delete_option('user_feedback_quick_collector_capture_errors');
+delete_option('user_feedback_menu_link_enabled');
 
 // Drop custom tables
 $submissions_table = $wpdb->prefix . 'user_feedback_submissions';

@@ -73,37 +73,26 @@ function user_feedback_validate_upload($file) {
     }
     
     // Get settings
-    $max_file_size = get_option('user_feedback_max_file_size', 5); // MB
-    $allowed_types = get_option('user_feedback_allowed_file_types', 'jpg,jpeg,png,gif,webp');
-    
-    // Check file size (convert MB to bytes)
-    $max_bytes = $max_file_size * 1024 * 1024;
+    $max_bytes = user_feedback_get_max_file_size_bytes();
+    $allowed_types = user_feedback_get_allowed_file_types();
     if ($file['size'] > $max_bytes) {
-        return new WP_Error('file_too_large', sprintf('File size exceeds maximum allowed size of %d MB.', $max_file_size));
+        return new WP_Error('file_too_large', sprintf('File size exceeds maximum allowed size of %d MB.', user_feedback_get_max_file_size_mb()));
     }
     
     // Check file type
     $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    $allowed_exts = array_map('trim', explode(',', $allowed_types));
-    
-    if (!in_array($file_ext, $allowed_exts)) {
-        return new WP_Error('invalid_file_type', sprintf('Invalid file type. Allowed types: %s', $allowed_types));
+    if (!in_array($file_ext, $allowed_types, true)) {
+        return new WP_Error('invalid_file_type', sprintf('Invalid file type. Allowed types: %s', implode(',', $allowed_types)));
     }
     
     // Check MIME type
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mime_type = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
-    
-    $allowed_mimes = array(
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/gif',
-        'image/webp'
-    );
-    
-    if (!in_array($mime_type, $allowed_mimes)) {
+
+    $allowed_mimes = user_feedback_get_allowed_mime_types();
+
+    if (!in_array($mime_type, $allowed_mimes, true)) {
         return new WP_Error('invalid_mime_type', 'Invalid file MIME type. Only images are allowed.');
     }
     
@@ -122,12 +111,7 @@ function user_feedback_handle_upload($file) {
     // Override default upload handler
     $upload_overrides = array(
         'test_form' => false,
-        'mimes' => array(
-            'jpg|jpeg|jpe' => 'image/jpeg',
-            'png' => 'image/png',
-            'gif' => 'image/gif',
-            'webp' => 'image/webp'
-        )
+        'mimes' => user_feedback_get_upload_mime_overrides(),
     );
     
     // Handle the upload

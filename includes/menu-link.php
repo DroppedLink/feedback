@@ -15,10 +15,7 @@ if (!defined('WPINC')) {
 add_filter('body_class', 'user_feedback_menu_body_class');
 function user_feedback_menu_body_class($classes) {
     // Check if quick collector or menu link should be enabled
-    $quick_collector_enabled = get_option('user_feedback_quick_collector_enabled', '0');
-    $menu_link_enabled = get_option('user_feedback_menu_link_enabled', '1');
-    
-    if ($quick_collector_enabled === '1' || $menu_link_enabled === '1') {
+    if ((user_feedback_is_quick_collector_enabled() && is_user_logged_in()) || user_feedback_is_menu_link_enabled()) {
         $classes[] = 'user-feedback-menu-enabled';
     }
     
@@ -36,8 +33,7 @@ function user_feedback_menu_link_script() {
         return;
     }
     
-    $menu_link_enabled = get_option('user_feedback_menu_link_enabled', '1');
-    if ($menu_link_enabled !== '1') {
+    if (!user_feedback_is_menu_link_enabled()) {
         return;
     }
     
@@ -81,12 +77,9 @@ function user_feedback_menu_link_script() {
 add_action('wp_footer', 'user_feedback_menu_modal_fallback', 5);
 add_action('admin_footer', 'user_feedback_menu_modal_fallback', 5);
 function user_feedback_menu_modal_fallback() {
-    $menu_link_enabled = get_option('user_feedback_menu_link_enabled', '1');
-    $quick_collector_enabled = get_option('user_feedback_quick_collector_enabled', '0');
-    
     // Only output if menu link is enabled but quick collector is disabled
     // (Quick collector already outputs the modal)
-    if ($menu_link_enabled === '1' && $quick_collector_enabled !== '1') {
+    if (user_feedback_is_menu_link_enabled() && !user_feedback_is_quick_collector_enabled()) {
         if (is_user_logged_in()) {
             // Call the quick collector modal function since it's the same modal
             user_feedback_quick_collector_modal();
@@ -102,8 +95,7 @@ function user_feedback_menu_link_notice() {
     // Only show on nav-menus.php page
     $screen = get_current_screen();
     if ($screen && $screen->id === 'nav-menus') {
-        $menu_link_enabled = get_option('user_feedback_menu_link_enabled', '1');
-        if ($menu_link_enabled === '1') {
+        if (user_feedback_is_menu_link_enabled()) {
             ?>
             <div class="notice notice-info" style="padding: 15px;">
                 <h3 style="margin-top: 0;">📝 User Feedback Plugin - Add Feedback Link to Menu</h3>

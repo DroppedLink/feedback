@@ -78,6 +78,22 @@
     cursor: not-allowed;
 }
 
+.user-feedback-cancel {
+    background: #f6f7f7 !important;
+    color: #0a4b78 !important;
+    border: 1px solid #0a4b78 !important;
+    box-shadow: none !important;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.user-feedback-cancel:hover,
+.user-feedback-cancel:focus {
+    background: #e6f2fb !important;
+    color: #06385a !important;
+    border-color: #06385a !important;
+    outline: none;
+}
+
 /* Messages */
 .user-feedback-message {
     margin-top: 15px;
