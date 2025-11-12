@@ -18,6 +18,8 @@ function user_feedback_submissions_page() {
     
     // Get filter parameters
     $filter_type = isset($_GET['filter_type']) ? sanitize_text_field($_GET['filter_type']) : '';
+    $filter_category = isset($_GET['filter_category']) ? intval($_GET['filter_category']) : '';
+    $filter_form = isset($_GET['filter_form']) ? intval($_GET['filter_form']) : '';
     $filter_status = isset($_GET['filter_status']) ? sanitize_text_field($_GET['filter_status']) : '';
     $filter_search = isset($_GET['filter_search']) ? sanitize_text_field($_GET['filter_search']) : '';
     $paged = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
@@ -35,6 +37,12 @@ function user_feedback_submissions_page() {
     
     if (!empty($filter_type)) {
         $args['type'] = $filter_type;
+    }
+    if (!empty($filter_category)) {
+        $args['category_id'] = $filter_category;
+    }
+    if (!empty($filter_form)) {
+        $args['form_id'] = $filter_form;
     }
     if (!empty($filter_status)) {
         $args['status'] = $filter_status;
@@ -91,11 +99,44 @@ function user_feedback_submissions_page() {
         
         <!-- Filters -->
         <div class="user-feedback-filters">
-            <form method="get" action="">
+            <form method="get" action="" id="submissions-filter-form">
                 <input type="hidden" name="page" value="user-feedback">
                 
+                <?php
+                // Get categories and forms for filtering
+                $all_categories = userfeedback_get_categories();
+                $all_forms = array();
+                if ($filter_category) {
+                    $all_forms = userfeedback_get_forms(array('category_id' => $filter_category));
+                }
+                ?>
+                
+                <?php if (!empty($all_categories)): ?>
+                <select name="filter_category" id="filter-category" data-nonce="<?php echo esc_attr(wp_create_nonce('user_feedback_nonce')); ?>">
+                    <option value="">All Categories</option>
+                    <?php foreach ($all_categories as $category): ?>
+                        <option value="<?php echo esc_attr($category->id); ?>" 
+                                <?php selected($filter_category, $category->id); ?>>
+                            <?php echo esc_html($category->name); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                
+                <select name="filter_form" id="filter-form">
+                    <option value="">All Forms</option>
+                    <?php if (!empty($all_forms)): ?>
+                        <?php foreach ($all_forms as $form): ?>
+                            <option value="<?php echo esc_attr($form->id); ?>" 
+                                    <?php selected($filter_form, $form->id); ?>>
+                                <?php echo esc_html($form->name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
+                <?php endif; ?>
+                
                 <select name="filter_type">
-                    <option value="">All Types</option>
+                    <option value="">All Types (Legacy)</option>
                     <option value="comment" <?php selected($filter_type, 'comment'); ?>>Comments</option>
                     <option value="bug" <?php selected($filter_type, 'bug'); ?>>Bugs</option>
                 </select>
@@ -122,6 +163,8 @@ function user_feedback_submissions_page() {
                     add_query_arg(array(
                         'action' => 'user_feedback_export',
                         'filter_type' => $filter_type,
+                        'filter_category' => $filter_category,
+                        'filter_form' => $filter_form,
                         'filter_status' => $filter_status
                     ), admin_url('admin.php')),
                     'user_feedback_export'
@@ -130,6 +173,26 @@ function user_feedback_submissions_page() {
                 <a href="<?php echo esc_url($export_url); ?>" class="button button-secondary">Export CSV</a>
             </form>
         </div>
+        
+        <!-- Bulk Actions -->
+        <?php if (!empty($submissions)): ?>
+        <div class="user-feedback-bulk-actions">
+            <input type="checkbox" id="bulk-select-all">
+            <label for="bulk-select-all">Select All</label>
+            
+            <select id="bulk-action-select">
+                <option value="">Select Action</option>
+                <option value="new">Mark as New</option>
+                <option value="in_progress">Mark as In Progress</option>
+                <option value="testing">Mark as Testing</option>
+                <option value="resolved">Mark as Resolved</option>
+                <option value="wont_fix">Mark as Won't Fix</option>
+                <option value="delete">Delete</option>
+            </select>
+            
+            <button type="button" id="apply-bulk-action" class="button" disabled>Bulk Action</button>
+        </div>
+        <?php endif; ?>
         
         <!-- Submissions List -->
         <div class="user-feedback-list">
@@ -141,14 +204,37 @@ function user_feedback_submissions_page() {
                     $user = get_userdata($submission->user_id);
                     $user_name = $user ? $user->display_name : 'Unknown User';
                     $status_class = 'status-' . str_replace('_', '-', $submission->status);
-                    $type_class = 'type-' . $submission->type;
+                    $type_class = $submission->type ? 'type-' . $submission->type : 'type-form';
+                    
+                    // Get form and category info
+                    $form_name = '';
+                    $category_name = '';
+                    if (!empty($submission->form_id)) {
+                        $form = userfeedback_get_form($submission->form_id);
+                        if ($form) {
+                            $form_name = $form->name;
+                            $category = userfeedback_get_category($form->category_id);
+                            if ($category) {
+                                $category_name = $category->name;
+                            }
+                        }
+                    }
                     ?>
                     <div class="submission-item <?php echo esc_attr($status_class . ' ' . $type_class); ?>" data-id="<?php echo esc_attr($submission->id); ?>">
-                        <div class="submission-header">
+                        <div class="submission-header" style="cursor: pointer;">
+                            <div class="submission-checkbox-wrapper">
+                                <input type="checkbox" class="submission-checkbox" value="<?php echo esc_attr($submission->id); ?>" onclick="event.stopPropagation();">
+                            </div>
                             <div class="submission-meta">
-                                <span class="submission-type badge badge-<?php echo esc_attr($submission->type); ?>">
-                                    <?php echo esc_html(ucfirst($submission->type)); ?>
-                                </span>
+                                <?php if ($form_name): ?>
+                                    <span class="submission-form badge badge-form">
+                                        <?php echo esc_html($category_name ? $category_name . ' / ' : ''); ?><?php echo esc_html($form_name); ?>
+                                    </span>
+                                <?php elseif ($submission->type): ?>
+                                    <span class="submission-type badge badge-<?php echo esc_attr($submission->type); ?>">
+                                        <?php echo esc_html(ucfirst($submission->type)); ?> (Legacy)
+                                    </span>
+                                <?php endif; ?>
                                 <span class="submission-status badge badge-<?php echo esc_attr($submission->status); ?>">
                                     <?php echo esc_html(str_replace('_', ' ', ucfirst($submission->status))); ?>
                                 </span>
@@ -158,17 +244,39 @@ function user_feedback_submissions_page() {
                                     </span>
                                 <?php endif; ?>
                             </div>
-                            <div class="submission-date">
-                                <?php echo esc_html(date('M d, Y g:i A', strtotime($submission->created_at))); ?>
+                            <div class="submission-header-right">
+                                <span class="submission-date">
+                                    <?php echo esc_html(date('M d, Y g:i A', strtotime($submission->created_at))); ?>
+                                </span>
+                                <span class="submission-toggle">▼</span>
                             </div>
                         </div>
                         
-                        <div class="submission-content">
+                        <div class="submission-content" style="display: none;">
                             <h3><?php echo esc_html($submission->subject); ?></h3>
                             <p class="submission-user">By: <?php echo esc_html($user_name); ?></p>
                             <div class="submission-message">
                                 <?php echo nl2br(esc_html($submission->message)); ?>
                             </div>
+                            
+                            <?php if (!empty($submission->form_data)): ?>
+                                <?php
+                                $form_data = json_decode($submission->form_data, true);
+                                if ($form_data && is_array($form_data)):
+                                ?>
+                                    <div class="submission-form-data">
+                                        <strong>Form Responses:</strong>
+                                        <div class="form-data-content">
+                                            <?php foreach ($form_data as $field_name => $field_value): ?>
+                                                <p>
+                                                    <strong><?php echo esc_html(ucwords(str_replace('_', ' ', $field_name))); ?>:</strong>
+                                                    <?php echo esc_html($field_value); ?>
+                                                </p>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
                             
                             <?php if (!empty($submission->admin_reply)): ?>
                                 <div class="submission-reply">
@@ -260,9 +368,22 @@ function user_feedback_submissions_page() {
                             <?php endif; ?>
                         </div>
                         
+                        <!-- Quick Reply Box -->
+                        <div class="quick-reply-box" style="display: none;">
+                            <textarea class="quick-reply-textarea" rows="4" placeholder="Type your reply..."></textarea>
+                            <div class="quick-reply-actions">
+                                <button type="button" class="button button-primary quick-reply-submit">Send Reply</button>
+                                <span class="quick-reply-message"></span>
+                            </div>
+                        </div>
+                        
                         <div class="submission-actions">
+                            <button class="button button-small quick-reply-toggle" data-id="<?php echo esc_attr($submission->id); ?>">
+                                Quick Reply
+                            </button>
+                            
                             <button class="button button-primary reply-button" data-id="<?php echo esc_attr($submission->id); ?>">
-                                Reply
+                                Full Reply
                             </button>
                             
                             <select class="status-selector" data-id="<?php echo esc_attr($submission->id); ?>">

@@ -21,27 +21,29 @@ function user_feedback_add_admin_menu() {
         30
     );
     
-    // Submenu - Dashboard (rename main menu link)
+    // Submenu - Submissions (rename main menu link)
     add_submenu_page(
         'user-feedback',
-        'Submissions Dashboard',
-        'Dashboard',
+        'Submissions',
+        'Submissions',
         'manage_options',
         'user-feedback',
         'user_feedback_submissions_page'
     );
     
-    // Submenu - Canned Responses
+    // Note: Form Builder is added via form-builder.php with priority 20
+    
+    // Submenu - Responses (order: 3rd)
     add_submenu_page(
         'user-feedback',
         'Canned Responses',
-        'Canned Responses',
+        'Responses',
         'manage_options',
         'user-feedback-responses',
         'user_feedback_canned_responses_page'
     );
     
-    // Submenu - Settings
+    // Submenu - Settings (order: 4th - last)
     add_submenu_page(
         'user-feedback',
         'Settings',
@@ -65,13 +67,8 @@ function user_feedback_settings_page() {
     if (isset($_POST['user_feedback_settings_submit'])) {
         check_admin_referer('user_feedback_settings_nonce');
         
-        update_option('user_feedback_admin_email', sanitize_email($_POST['admin_email']));
-        update_option('user_feedback_default_status', sanitize_text_field($_POST['default_status']));
-        update_option('user_feedback_enable_comments', isset($_POST['enable_comments']) ? '1' : '0');
-        update_option('user_feedback_enable_bugs', isset($_POST['enable_bugs']) ? '1' : '0');
-        update_option('user_feedback_comment_label', sanitize_text_field($_POST['comment_label']));
-        update_option('user_feedback_bug_label', sanitize_text_field($_POST['bug_label']));
-        update_option('user_feedback_submit_button_text', sanitize_text_field($_POST['submit_button_text']));
+        update_option('userfeedback_admin_email', sanitize_email($_POST['admin_email']));
+        update_option('userfeedback_default_status', sanitize_text_field($_POST['default_status']));
         
         // Quick Collector settings
         update_option('user_feedback_quick_collector_enabled', isset($_POST['quick_collector_enabled']) ? '1' : '0');
@@ -89,13 +86,8 @@ function user_feedback_settings_page() {
     }
     
     // Get current settings
-    $admin_email = get_option('user_feedback_admin_email', get_option('admin_email'));
-    $default_status = get_option('user_feedback_default_status', 'new');
-    $enable_comments = get_option('user_feedback_enable_comments', '1');
-    $enable_bugs = get_option('user_feedback_enable_bugs', '1');
-    $comment_label = get_option('user_feedback_comment_label', 'Comment/Question');
-    $bug_label = get_option('user_feedback_bug_label', 'Bug Report');
-    $submit_button_text = get_option('user_feedback_submit_button_text', 'Submit');
+    $admin_email = get_option('userfeedback_admin_email', get_option('user_feedback_admin_email', get_option('admin_email')));
+    $default_status = get_option('userfeedback_default_status', get_option('user_feedback_default_status', 'new'));
     
     // Quick Collector settings
     $quick_collector_enabled = get_option('user_feedback_quick_collector_enabled', '0');
@@ -111,6 +103,16 @@ function user_feedback_settings_page() {
     ?>
     <div class="wrap">
         <h1>User Feedback Settings</h1>
+        
+        <div class="userfeedback-notice userfeedback-notice-info" style="background: #e7f3ff; border-left: 4px solid #0073aa; padding: 12px; margin: 20px 0;">
+            <p style="margin: 0;">
+                <strong>Custom Form Builder!</strong> 
+                Create custom forms with dynamic fields instead of using hardcoded types. 
+                <a href="<?php echo esc_url(admin_url('admin.php?page=user-feedback-form-builder')); ?>" class="button button-primary" style="margin-left: 10px;">
+                    Go to Forms
+                </a>
+            </p>
+        </div>
         
         <form method="post" action="">
             <?php wp_nonce_field('user_feedback_settings_nonce'); ?>
@@ -141,74 +143,6 @@ function user_feedback_settings_page() {
                             <option value="in_progress" <?php selected($default_status, 'in_progress'); ?>>In Progress</option>
                         </select>
                         <p class="description">Status assigned to newly submitted items</p>
-                    </td>
-                </tr>
-            </table>
-            
-            <h2>Submission Types</h2>
-            <table class="form-table">
-                <tr>
-                    <th scope="row">Enable Submission Types</th>
-                    <td>
-                        <fieldset>
-                            <label>
-                                <input type="checkbox" 
-                                       name="enable_comments" 
-                                       value="1" 
-                                       <?php checked($enable_comments, '1'); ?>>
-                                Comments/Questions
-                            </label>
-                            <br>
-                            <label>
-                                <input type="checkbox" 
-                                       name="enable_bugs" 
-                                       value="1" 
-                                       <?php checked($enable_bugs, '1'); ?>>
-                                Bug Reports
-                            </label>
-                        </fieldset>
-                    </td>
-                </tr>
-            </table>
-            
-            <h2>Form Labels</h2>
-            <table class="form-table">
-                <tr>
-                    <th scope="row">
-                        <label for="comment_label">Comment/Question Label</label>
-                    </th>
-                    <td>
-                        <input type="text" 
-                               id="comment_label" 
-                               name="comment_label" 
-                               value="<?php echo esc_attr($comment_label); ?>" 
-                               class="regular-text">
-                    </td>
-                </tr>
-                
-                <tr>
-                    <th scope="row">
-                        <label for="bug_label">Bug Report Label</label>
-                    </th>
-                    <td>
-                        <input type="text" 
-                               id="bug_label" 
-                               name="bug_label" 
-                               value="<?php echo esc_attr($bug_label); ?>" 
-                               class="regular-text">
-                    </td>
-                </tr>
-                
-                <tr>
-                    <th scope="row">
-                        <label for="submit_button_text">Submit Button Text</label>
-                    </th>
-                    <td>
-                        <input type="text" 
-                               id="submit_button_text" 
-                               name="submit_button_text" 
-                               value="<?php echo esc_attr($submit_button_text); ?>" 
-                               class="regular-text">
                     </td>
                 </tr>
             </table>
