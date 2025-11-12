@@ -960,18 +960,23 @@ jQuery(document).ready(function($) {
         }
         
         $.each(formFields, function(index, field) {
-            var $fieldHtml = $('<div class="userfeedback-field-config" data-field-id="' + field.id + '"></div>');
+            var $fieldHtml = $('<div class="userfeedback-field-config" data-field-id="' + field.id + '" draggable="true"></div>');
             
             // Header
             var $header = $('<div class="userfeedback-field-header"></div>');
+            
+            // Drag handle
+            var $dragHandle = $('<span class="userfeedback-drag-handle" title="Drag to reorder">⋮⋮</span>');
+            $header.append($dragHandle);
+            
             $header.append('<span class="userfeedback-field-type">' + getFieldTypeLabel(field.type) + '</span>');
             
             var $controls = $('<div class="userfeedback-field-controls"></div>');
             if (index > 0) {
-                $controls.append('<button type="button" class="button button-small move-up">↑</button>');
+                $controls.append('<button type="button" class="button button-small move-up" title="Move up">↑</button>');
             }
             if (index < formFields.length - 1) {
-                $controls.append('<button type="button" class="button button-small move-down">↓</button>');
+                $controls.append('<button type="button" class="button button-small move-down" title="Move down">↓</button>');
             }
             $controls.append('<button type="button" class="button button-small button-link-delete remove-field">Remove</button>');
             $header.append($controls);
@@ -1032,6 +1037,78 @@ jQuery(document).ready(function($) {
         });
         
         attachFieldEventHandlers();
+        attachDragDropHandlers();
+    }
+    
+    function attachDragDropHandlers() {
+        var dragSrcEl = null;
+        
+        $('.userfeedback-field-config').off('dragstart dragend dragover drop dragleave').each(function() {
+            var $el = $(this);
+            
+            // Dragstart
+            $el.on('dragstart', function(e) {
+                dragSrcEl = this;
+                e.originalEvent.dataTransfer.effectAllowed = 'move';
+                e.originalEvent.dataTransfer.setData('text/html', this.innerHTML);
+                $(this).addClass('dragging');
+            });
+            
+            // Dragend
+            $el.on('dragend', function(e) {
+                $(this).removeClass('dragging');
+                $('.userfeedback-field-config').removeClass('over');
+            });
+            
+            // Dragover
+            $el.on('dragover', function(e) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                e.originalEvent.dataTransfer.dropEffect = 'move';
+                return false;
+            });
+            
+            // Dragenter
+            $el.on('dragenter', function(e) {
+                if (this !== dragSrcEl) {
+                    $(this).addClass('over');
+                }
+            });
+            
+            // Dragleave
+            $el.on('dragleave', function(e) {
+                $(this).removeClass('over');
+            });
+            
+            // Drop
+            $el.on('drop', function(e) {
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                
+                if (dragSrcEl !== this) {
+                    var srcId = $(dragSrcEl).data('field-id');
+                    var targetId = $(this).data('field-id');
+                    
+                    var srcIndex = formFields.findIndex(f => f.id === srcId);
+                    var targetIndex = formFields.findIndex(f => f.id === targetId);
+                    
+                    if (srcIndex !== -1 && targetIndex !== -1) {
+                        // Remove from old position
+                        var movedItem = formFields.splice(srcIndex, 1)[0];
+                        // Insert at new position
+                        formFields.splice(targetIndex, 0, movedItem);
+                        
+                        renderFields();
+                        updateFieldConfigJSON();
+                    }
+                }
+                
+                $('.userfeedback-field-config').removeClass('over');
+                return false;
+            });
+        });
     }
     
     function attachFieldEventHandlers() {
