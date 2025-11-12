@@ -2,7 +2,7 @@
 /**
  * Plugin Name: User Feedback & Bug Reports
  * Description: Manage user feedback, comments, and bug reports with email notifications and detailed status tracking
- * Version: 2.3.0
+ * Version: 2.3.1
  * Author: Your Name
  */
 
@@ -12,7 +12,7 @@ if (!defined('WPINC')) {
 }
 
 // Define constants
-define('USER_FEEDBACK_VERSION', '2.3.0');
+define('USER_FEEDBACK_VERSION', '2.3.1');
 define('USER_FEEDBACK_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('USER_FEEDBACK_PLUGIN_URL', plugin_dir_url(__FILE__));
 

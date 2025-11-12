@@ -370,6 +370,20 @@ function user_feedback_submissions_page() {
                         
                         <!-- Quick Reply Box -->
                         <div class="quick-reply-box" style="display: none;">
+                            <div class="quick-reply-canned" style="margin-bottom: 10px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Use Canned Response:</label>
+                                <select class="quick-reply-canned-selector" style="width: 100%; max-width: 400px;">
+                                    <option value="">-- Select a response --</option>
+                                    <?php
+                                    $canned_responses = user_feedback_get_canned_responses();
+                                    foreach ($canned_responses as $response):
+                                    ?>
+                                        <option value="<?php echo esc_attr($response->id); ?>">
+                                            <?php echo esc_html($response->title); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                             <textarea class="quick-reply-textarea" rows="4" placeholder="Type your reply..."></textarea>
                             <div class="quick-reply-actions">
                                 <button type="button" class="button button-primary quick-reply-submit">Send Reply</button>

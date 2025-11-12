@@ -303,7 +303,7 @@ jQuery(document).ready(function($) {
             }
         });
         
-        // Canned Response Selection
+        // Canned Response Selection (Full Reply Modal)
         $('#canned-response-selector').on('change', function() {
             var responseId = $(this).val();
             if (!responseId) return;
@@ -320,6 +320,30 @@ jQuery(document).ready(function($) {
                 success: function(response) {
                     if (response.success) {
                         $('#reply-message').val(response.data.content);
+                    }
+                }
+            });
+        });
+        
+        // Canned Response Selection (Quick Reply)
+        $(document).on('change', '.quick-reply-canned-selector', function() {
+            var responseId = $(this).val();
+            var $textarea = $(this).closest('.quick-reply-box').find('.quick-reply-textarea');
+            
+            if (!responseId) return;
+            
+            // Get canned response content via AJAX
+            $.ajax({
+                url: userFeedback.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'user_feedback_get_canned_response',
+                    nonce: userFeedback.nonce,
+                    response_id: responseId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $textarea.val(response.data.content);
                     }
                 }
             });
@@ -825,12 +849,11 @@ jQuery(document).ready(function($) {
         var categoryId = $(this).val();
         var $formSelect = $('#filter-form');
         
+        // Don't auto-submit, just update the form dropdown
         $formSelect.html('<option value="">Loading...</option>').prop('disabled', true);
         
         if (!categoryId) {
             $formSelect.html('<option value="">All Forms</option>').prop('disabled', false);
-            // Auto-submit the form to apply the filter
-            $('#submissions-filter-form').submit();
             return;
         }
         
@@ -840,7 +863,7 @@ jQuery(document).ready(function($) {
             dataType: 'json',
             data: {
                 action: 'userfeedback_get_forms_by_category',
-                nonce: $(this).data('nonce'),
+                nonce: userFeedback.nonce,
                 category_id: categoryId
             },
             success: function(response) {
@@ -851,8 +874,6 @@ jQuery(document).ready(function($) {
                     });
                 }
                 $formSelect.prop('disabled', false);
-                // Auto-submit the form to apply the filter
-                $('#submissions-filter-form').submit();
             },
             error: function() {
                 $formSelect.html('<option value="">All Forms</option>').prop('disabled', false);
