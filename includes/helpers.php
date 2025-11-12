@@ -36,12 +36,13 @@ function user_feedback_should_enqueue_global_assets() {
  * Get the maximum file size allowed for uploads (in megabytes).
  */
 function user_feedback_get_max_file_size_mb() {
-    $max = intval(get_option('user_feedback_max_file_size', 5));
+    $max = intval(get_option('user_feedback_max_file_size', 25));
     if ($max < 1) {
         $max = 1;
     }
-    if ($max > 50) {
-        $max = 50;
+    // Allow up to 200 MB (still limited by server PHP settings)
+    if ($max > 200) {
+        $max = 200;
     }
 
     return $max;
@@ -58,11 +59,12 @@ function user_feedback_get_max_file_size_bytes() {
  * Get the list of allowed file extensions for attachments.
  */
 function user_feedback_get_allowed_file_types() {
-    $raw = get_option('user_feedback_allowed_file_types', 'jpg,jpeg,png,gif,webp');
+    $default_types = 'jpg,jpeg,png,gif,webp,svg,bmp,ico,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,rtf,log,zip,rar,7z,tar,gz,tgz,bz2,xz,json,xml,csv,yaml,yml,ini,conf,cfg,config,properties,toml,env,md,markdown,rst,sql,db,sqlite,html,css,js,ts,jsx,tsx,py,php,rb,go,rs,c,cpp,h,hpp,java,kt,swift,sh,bash,ps1,bat,cmd,pl,lua,vbs,dockerfile,tf,tfvars,pem,crt,key,cer,dump,dmp,trace,pcap,pcapng,cap,patch,diff,bin,dat,mp4,mov,avi,webm,mkv,odt,ods,odp';
+    $raw = get_option('user_feedback_allowed_file_types', $default_types);
     $types = array_filter(array_map('strtolower', array_map('trim', explode(',', $raw))));
 
     if (empty($types)) {
-        $types = array('jpg', 'jpeg', 'png', 'gif', 'webp');
+        $types = explode(',', $default_types);
     }
 
     return array_values(array_unique($types));

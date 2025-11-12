@@ -98,8 +98,9 @@ function user_feedback_settings_page() {
     
     // Attachment settings
     $enable_attachments = get_option('user_feedback_enable_attachments', '1');
-    $max_file_size = get_option('user_feedback_max_file_size', 5);
-    $allowed_file_types = get_option('user_feedback_allowed_file_types', 'jpg,jpeg,png,gif,webp');
+    $max_file_size = get_option('user_feedback_max_file_size', 25);
+    $default_file_types = 'jpg,jpeg,png,gif,webp,svg,bmp,ico,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,rtf,log,zip,rar,7z,tar,gz,tgz,bz2,xz,json,xml,csv,yaml,yml,ini,conf,cfg,config,properties,toml,env,md,markdown,rst,sql,db,sqlite,html,css,js,ts,jsx,tsx,py,php,rb,go,rs,c,cpp,h,hpp,java,kt,swift,sh,bash,ps1,bat,cmd,pl,lua,vbs,dockerfile,tf,tfvars,pem,crt,key,cer,dump,dmp,trace,pcap,pcapng,cap,patch,diff,bin,dat,mp4,mov,avi,webm,mkv,odt,ods,odp';
+    $allowed_file_types = get_option('user_feedback_allowed_file_types', $default_file_types);
     ?>
     <div class="wrap">
         <h1>User Feedback Settings</h1>
@@ -232,19 +233,19 @@ function user_feedback_settings_page() {
                 </tr>
             </table>
             
-            <h2>Screenshot Attachments</h2>
+            <h2>File Attachments</h2>
             <table class="form-table">
                 <tr>
-                    <th scope="row">Enable Screenshot Attachments</th>
+                    <th scope="row">Enable File Attachments</th>
                     <td>
                         <label>
                             <input type="checkbox" 
                                    name="enable_attachments" 
                                    value="1" 
                                    <?php checked($enable_attachments, '1'); ?>>
-                            Allow users to attach screenshots to their feedback
+                            Allow users to attach files to their feedback
                         </label>
-                        <p class="description">Users can upload images to help illustrate bugs or feedback</p>
+                        <p class="description">Users can upload screenshots, logs, configs, code samples, and other files to help illustrate bugs or provide context</p>
                     </td>
                 </tr>
                 
@@ -258,10 +259,15 @@ function user_feedback_settings_page() {
                                name="max_file_size" 
                                value="<?php echo esc_attr($max_file_size); ?>" 
                                min="1" 
-                               max="50" 
-                               step="1"
+                               max="200" 
+                               step="5"
                                class="small-text">
-                        <p class="description">Maximum file size in megabytes (1-50 MB)</p>
+                        <p class="description">
+                            Maximum file size in megabytes (1-200 MB)<br>
+                            <strong>Note:</strong> Actual limit also depends on your server's PHP settings:
+                            <code>upload_max_filesize</code> and <code>post_max_size</code><br>
+                            <em>Current PHP upload limit: <?php echo size_format(wp_max_upload_size()); ?></em>
+                        </p>
                     </td>
                 </tr>
                 
@@ -270,12 +276,29 @@ function user_feedback_settings_page() {
                         <label for="allowed_file_types">Allowed File Types</label>
                     </th>
                     <td>
-                        <input type="text" 
+                        <textarea 
                                id="allowed_file_types" 
                                name="allowed_file_types" 
-                               value="<?php echo esc_attr($allowed_file_types); ?>" 
-                               class="regular-text">
-                        <p class="description">Comma-separated list of allowed extensions (e.g., jpg,jpeg,png,gif,webp)</p>
+                               rows="3"
+                               class="large-text code"
+                               style="font-family: monospace;"><?php echo esc_textarea($allowed_file_types); ?></textarea>
+                        <p class="description">
+                            <strong>Comma-separated list of allowed file extensions for IT/DevOps environments.</strong><br>
+                            <strong>Images:</strong> jpg, jpeg, png, gif, webp, svg, bmp, ico<br>
+                            <strong>Documents:</strong> pdf, doc, docx, xls, xlsx, ppt, pptx, txt, rtf, md, markdown, rst, odt, ods, odp<br>
+                            <strong>Archives:</strong> zip, rar, 7z, tar, gz, tgz, bz2, xz<br>
+                            <strong>Programming:</strong> py, php, rb, go, rs, c, cpp, h, hpp, java, kt, swift, pl, lua, vbs<br>
+                            <strong>Web/Frontend:</strong> html, css, js, ts, jsx, tsx<br>
+                            <strong>Config Files:</strong> json, xml, yaml, yml, ini, conf, cfg, config, properties, toml, env<br>
+                            <strong>Database:</strong> sql, db, sqlite, csv<br>
+                            <strong>Scripts:</strong> sh, bash, ps1, bat, cmd<br>
+                            <strong>DevOps:</strong> dockerfile, tf, tfvars (Terraform)<br>
+                            <strong>Security:</strong> pem, crt, key, cer (certificates/keys)<br>
+                            <strong>Debug/Network:</strong> log, dump, dmp, trace, pcap, pcapng, cap, patch, diff<br>
+                            <strong>Binary/Data:</strong> bin, dat<br>
+                            <strong>Videos:</strong> mp4, mov, avi, webm, mkv (screen recordings)<br>
+                            <em>Note: WordPress MIME type validation provides security regardless of extensions listed.</em>
+                        </p>
                     </td>
                 </tr>
             </table>
