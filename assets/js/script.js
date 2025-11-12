@@ -853,10 +853,35 @@ jQuery(document).ready(function($) {
         $formSelect.html('<option value="">Loading...</option>').prop('disabled', true);
         
         if (!categoryId) {
-            $formSelect.html('<option value="">All Forms</option>').prop('disabled', false);
+            // Load all forms when "All Categories" is selected
+            $.ajax({
+                url: userFeedback.ajaxUrl,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'userfeedback_get_forms_by_category',
+                    nonce: userFeedback.nonce,
+                    category_id: '' // Empty means all categories
+                },
+                success: function(response) {
+                    $formSelect.html('<option value="">All Forms</option>');
+                    if (response.success && response.data.forms && response.data.forms.length) {
+                        $.each(response.data.forms, function(i, form) {
+                            // Show category name with form name for clarity
+                            var displayName = form.category_name ? form.category_name + ' → ' + form.name : form.name;
+                            $formSelect.append('<option value="' + form.id + '">' + displayName + '</option>');
+                        });
+                    }
+                    $formSelect.prop('disabled', false);
+                },
+                error: function() {
+                    $formSelect.html('<option value="">All Forms</option>').prop('disabled', false);
+                }
+            });
             return;
         }
         
+        // Load forms for specific category
         $.ajax({
             url: userFeedback.ajaxUrl,
             type: 'POST',

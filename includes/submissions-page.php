@@ -105,9 +105,15 @@ function user_feedback_submissions_page() {
                 <?php
                 // Get categories and forms for filtering
                 $all_categories = userfeedback_get_categories();
+                
+                // Get forms based on selected category, or all forms if no category selected
                 $all_forms = array();
                 if ($filter_category) {
+                    // Get forms from specific category
                     $all_forms = userfeedback_get_forms(array('category_id' => $filter_category));
+                } else {
+                    // Get all forms from all categories
+                    $all_forms = userfeedback_get_forms(array());
                 }
                 ?>
                 
@@ -128,7 +134,15 @@ function user_feedback_submissions_page() {
                         <?php foreach ($all_forms as $form): ?>
                             <option value="<?php echo esc_attr($form->id); ?>" 
                                     <?php selected($filter_form, $form->id); ?>>
-                                <?php echo esc_html($form->name); ?>
+                                <?php 
+                                // Show category name with form name for clarity when viewing all
+                                if (!$filter_category && !empty($form->category_id)) {
+                                    $form_category = userfeedback_get_category($form->category_id);
+                                    echo esc_html($form_category ? $form_category->name . ' → ' : '') . esc_html($form->name);
+                                } else {
+                                    echo esc_html($form->name);
+                                }
+                                ?>
                             </option>
                         <?php endforeach; ?>
                     <?php endif; ?>

@@ -629,6 +629,25 @@ function userfeedback_get_forms_by_category_handler() {
     
     $category_id = isset($_POST['category_id']) ? intval($_POST['category_id']) : 0;
     
+    // If no category specified, get ALL forms from ALL categories
+    if (!$category_id && isset($_POST['category_id']) && $_POST['category_id'] === '') {
+        $forms = userfeedback_get_forms(array());
+        
+        // Add category name to each form for display
+        foreach ($forms as $form) {
+            if (!empty($form->category_id)) {
+                $category = userfeedback_get_category($form->category_id);
+                $form->category_name = $category ? $category->name : '';
+            } else {
+                $form->category_name = '';
+            }
+        }
+        
+        wp_send_json_success(array('forms' => $forms));
+        return;
+    }
+    
+    // Get forms for specific category
     if (!$category_id) {
         wp_send_json_success(array('forms' => array()));
         return;

@@ -238,12 +238,13 @@ function user_feedback_get_submissions($args = array()) {
     $where = array('1=1');
     $where_values = array();
     
+    // Specific form filter (highest priority)
     if (!empty($args['form_id'])) {
         $where[] = 'form_id = %d';
         $where_values[] = $args['form_id'];
     }
-    
-    if (!empty($args['category_id'])) {
+    // Category filter (shows all forms in that category)
+    elseif (!empty($args['category_id'])) {
         // Get all forms in this category
         $forms = userfeedback_get_forms(array('category_id' => $args['category_id']));
         if (!empty($forms)) {
@@ -252,12 +253,13 @@ function user_feedback_get_submissions($args = array()) {
             $where[] = "form_id IN ($placeholders)";
             $where_values = array_merge($where_values, $form_ids);
         } else {
-            // No forms in category, return no results
-            $where[] = '1=0';
+            // No forms in category, but might have legacy submissions
+            // Only show legacy type submissions for this category (if applicable)
+            $where[] = '(form_id IS NULL OR form_id = 0)';
         }
     }
     
-    // Legacy support for type filter
+    // Legacy support for type filter (works independently or with category/form)
     if (!empty($args['type'])) {
         $where[] = 'type = %s';
         $where_values[] = $args['type'];
@@ -313,6 +315,27 @@ function user_feedback_get_submissions_count($args = array()) {
     $where = array('1=1');
     $where_values = array();
     
+    // Specific form filter (highest priority)
+    if (!empty($args['form_id'])) {
+        $where[] = 'form_id = %d';
+        $where_values[] = $args['form_id'];
+    }
+    // Category filter (shows all forms in that category)
+    elseif (!empty($args['category_id'])) {
+        // Get all forms in this category
+        $forms = userfeedback_get_forms(array('category_id' => $args['category_id']));
+        if (!empty($forms)) {
+            $form_ids = wp_list_pluck($forms, 'id');
+            $placeholders = implode(',', array_fill(0, count($form_ids), '%d'));
+            $where[] = "form_id IN ($placeholders)";
+            $where_values = array_merge($where_values, $form_ids);
+        } else {
+            // No forms in category, but might have legacy submissions
+            $where[] = '(form_id IS NULL OR form_id = 0)';
+        }
+    }
+    
+    // Legacy support for type filter
     if (!empty($args['type'])) {
         $where[] = 'type = %s';
         $where_values[] = $args['type'];
