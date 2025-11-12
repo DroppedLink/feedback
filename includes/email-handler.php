@@ -11,7 +11,12 @@ if (!defined('WPINC')) {
  * Send notification to admin about new submission
  */
 function user_feedback_send_new_submission_notification($submission) {
-    $admin_email = get_option('user_feedback_admin_email', get_option('admin_email'));
+    // Check if new submission emails are enabled
+    if (get_option('userfeedback_enable_new_submission_email', '1') !== '1') {
+        return;
+    }
+    
+    $admin_email = get_option('userfeedback_admin_email', get_option('user_feedback_admin_email', get_option('admin_email')));
     
     $user = get_userdata($submission->user_id);
     $user_name = $user ? $user->display_name : 'Unknown User';
@@ -19,7 +24,9 @@ function user_feedback_send_new_submission_notification($submission) {
     
     $type_label = ($submission->type === 'bug') ? 'Bug Report' : 'Comment/Question';
     
-    $subject = sprintf('[User Feedback] New %s: %s', $type_label, $submission->subject);
+    // Get customizable subject prefix
+    $subject_prefix = get_option('userfeedback_email_subject_prefix', '[' . get_bloginfo('name') . ']');
+    $subject = sprintf('%s New %s: %s', $subject_prefix, $type_label, $submission->subject);
     
     $message = "A new {$type_label} has been submitted.\n\n";
     $message .= "Submitted by: {$user_name} ({$user_email})\n";
@@ -40,6 +47,13 @@ function user_feedback_send_new_submission_notification($submission) {
     $message .= "View and respond: " . admin_url('admin.php?page=user-feedback') . "\n";
     
     $headers = array('Content-Type: text/plain; charset=UTF-8');
+    
+    // Set From name if configured
+    $from_name = get_option('userfeedback_email_from_name', get_bloginfo('name'));
+    if (!empty($from_name)) {
+        $headers[] = 'From: ' . $from_name . ' <' . $admin_email . '>';
+    }
+    
     if (!empty($user_email)) {
         $headers[] = 'Reply-To: ' . $user_email;
     }
@@ -51,6 +65,11 @@ function user_feedback_send_new_submission_notification($submission) {
  * Send reply notification to user
  */
 function user_feedback_send_reply_notification($submission, $reply) {
+    // Check if reply emails are enabled
+    if (get_option('userfeedback_enable_reply_email', '1') !== '1') {
+        return;
+    }
+    
     $user = get_userdata($submission->user_id);
     if (!$user) {
         return;
@@ -61,7 +80,9 @@ function user_feedback_send_reply_notification($submission, $reply) {
     
     $type_label = ($submission->type === 'bug') ? 'Bug Report' : 'Comment/Question';
     
-    $subject = sprintf('Re: %s - %s', $type_label, $submission->subject);
+    // Get customizable subject prefix
+    $subject_prefix = get_option('userfeedback_email_subject_prefix', '[' . get_bloginfo('name') . ']');
+    $subject = sprintf('%s Re: %s - %s', $subject_prefix, $type_label, $submission->subject);
     
     $message = "Hello {$user_name},\n\n";
     $message .= "Thank you for your {$type_label}. We have reviewed your submission and have a response:\n\n";
@@ -80,7 +101,14 @@ function user_feedback_send_reply_notification($submission, $reply) {
     $message .= "\nIf you have any additional questions, please feel free to submit another feedback.\n";
     
     $headers = array('Content-Type: text/plain; charset=UTF-8');
-    $admin_email = get_option('user_feedback_admin_email', get_option('admin_email'));
+    
+    // Set From name if configured
+    $admin_email = get_option('userfeedback_admin_email', get_option('user_feedback_admin_email', get_option('admin_email')));
+    $from_name = get_option('userfeedback_email_from_name', get_bloginfo('name'));
+    if (!empty($from_name) && !empty($admin_email)) {
+        $headers[] = 'From: ' . $from_name . ' <' . $admin_email . '>';
+    }
+    
     if (!empty($admin_email)) {
         $headers[] = 'Reply-To: ' . $admin_email;
     }
@@ -92,6 +120,11 @@ function user_feedback_send_reply_notification($submission, $reply) {
  * Send resolved notification to user
  */
 function user_feedback_send_resolved_notification($submission, $resolution_notes = '') {
+    // Check if resolved emails are enabled
+    if (get_option('userfeedback_enable_resolved_email', '1') !== '1') {
+        return;
+    }
+    
     $user = get_userdata($submission->user_id);
     if (!$user) {
         return;
@@ -102,7 +135,9 @@ function user_feedback_send_resolved_notification($submission, $resolution_notes
     
     $type_label = ($submission->type === 'bug') ? 'Bug Report' : 'Feedback';
     
-    $subject = sprintf('%s Resolved: %s', $type_label, $submission->subject);
+    // Get customizable subject prefix
+    $subject_prefix = get_option('userfeedback_email_subject_prefix', '[' . get_bloginfo('name') . ']');
+    $subject = sprintf('%s %s Resolved: %s', $subject_prefix, $type_label, $submission->subject);
     
     $message = "Hello {$user_name},\n\n";
     
@@ -132,7 +167,14 @@ function user_feedback_send_resolved_notification($submission, $resolution_notes
     $message .= "Thank you for helping us improve!\n";
     
     $headers = array('Content-Type: text/plain; charset=UTF-8');
-    $admin_email = get_option('user_feedback_admin_email', get_option('admin_email'));
+    
+    // Set From name if configured
+    $admin_email = get_option('userfeedback_admin_email', get_option('user_feedback_admin_email', get_option('admin_email')));
+    $from_name = get_option('userfeedback_email_from_name', get_bloginfo('name'));
+    if (!empty($from_name) && !empty($admin_email)) {
+        $headers[] = 'From: ' . $from_name . ' <' . $admin_email . '>';
+    }
+    
     if (!empty($admin_email)) {
         $headers[] = 'Reply-To: ' . $admin_email;
     }

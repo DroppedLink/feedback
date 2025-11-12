@@ -70,6 +70,13 @@ function user_feedback_settings_page() {
         update_option('userfeedback_admin_email', sanitize_email($_POST['admin_email']));
         update_option('userfeedback_default_status', sanitize_text_field($_POST['default_status']));
         
+        // Email Notification settings
+        update_option('userfeedback_enable_new_submission_email', isset($_POST['enable_new_submission_email']) ? '1' : '0');
+        update_option('userfeedback_enable_reply_email', isset($_POST['enable_reply_email']) ? '1' : '0');
+        update_option('userfeedback_enable_resolved_email', isset($_POST['enable_resolved_email']) ? '1' : '0');
+        update_option('userfeedback_email_from_name', sanitize_text_field($_POST['email_from_name']));
+        update_option('userfeedback_email_subject_prefix', sanitize_text_field($_POST['email_subject_prefix']));
+        
         // Quick Collector settings
         update_option('user_feedback_quick_collector_enabled', isset($_POST['quick_collector_enabled']) ? '1' : '0');
         update_option('user_feedback_quick_collector_label', sanitize_text_field($_POST['quick_collector_label']));
@@ -88,6 +95,13 @@ function user_feedback_settings_page() {
     // Get current settings
     $admin_email = get_option('userfeedback_admin_email', get_option('user_feedback_admin_email', get_option('admin_email')));
     $default_status = get_option('userfeedback_default_status', get_option('user_feedback_default_status', 'new'));
+    
+    // Email Notification settings
+    $enable_new_submission_email = get_option('userfeedback_enable_new_submission_email', '1');
+    $enable_reply_email = get_option('userfeedback_enable_reply_email', '1');
+    $enable_resolved_email = get_option('userfeedback_enable_resolved_email', '1');
+    $email_from_name = get_option('userfeedback_email_from_name', get_bloginfo('name'));
+    $email_subject_prefix = get_option('userfeedback_email_subject_prefix', '[' . get_bloginfo('name') . ']');
     
     // Quick Collector settings
     $quick_collector_enabled = get_option('user_feedback_quick_collector_enabled', '0');
@@ -144,6 +158,75 @@ function user_feedback_settings_page() {
                             <option value="in_progress" <?php selected($default_status, 'in_progress'); ?>>In Progress</option>
                         </select>
                         <p class="description">Status assigned to newly submitted items</p>
+                    </td>
+                </tr>
+            </table>
+            
+            <h2>Email Notifications</h2>
+            <table class="form-table">
+                <tr>
+                    <th scope="row">Enable Email Notifications</th>
+                    <td>
+                        <fieldset>
+                            <label>
+                                <input type="checkbox" 
+                                       name="enable_new_submission_email" 
+                                       value="1" 
+                                       <?php checked($enable_new_submission_email, '1'); ?>>
+                                <strong>New Submission Notifications</strong> - Email admin when users submit feedback
+                            </label>
+                            <br><br>
+                            <label>
+                                <input type="checkbox" 
+                                       name="enable_reply_email" 
+                                       value="1" 
+                                       <?php checked($enable_reply_email, '1'); ?>>
+                                <strong>Reply Notifications</strong> - Email users when you reply to their submission
+                            </label>
+                            <br><br>
+                            <label>
+                                <input type="checkbox" 
+                                       name="enable_resolved_email" 
+                                       value="1" 
+                                       <?php checked($enable_resolved_email, '1'); ?>>
+                                <strong>Resolved Notifications</strong> - Email users when their submission is marked as resolved
+                            </label>
+                        </fieldset>
+                        <p class="description">Control which automatic email notifications are sent</p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th scope="row">
+                        <label for="email_from_name">Email From Name</label>
+                    </th>
+                    <td>
+                        <input type="text" 
+                               id="email_from_name" 
+                               name="email_from_name" 
+                               value="<?php echo esc_attr($email_from_name); ?>" 
+                               class="regular-text">
+                        <p class="description">Name that appears as the sender in notification emails (defaults to your site name)</p>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th scope="row">
+                        <label for="email_subject_prefix">Email Subject Prefix</label>
+                    </th>
+                    <td>
+                        <input type="text" 
+                               id="email_subject_prefix" 
+                               name="email_subject_prefix" 
+                               value="<?php echo esc_attr($email_subject_prefix); ?>" 
+                               class="regular-text"
+                               placeholder="[<?php echo esc_attr(get_bloginfo('name')); ?>]">
+                        <p class="description">
+                            Prefix added to all email subjects (e.g., <code>[<?php echo esc_html(get_bloginfo('name')); ?>]</code>)<br>
+                            <strong>Examples:</strong><br>
+                            • <code><?php echo esc_html($email_subject_prefix); ?> New Bug Report: Login button not working</code><br>
+                            • <code><?php echo esc_html($email_subject_prefix); ?> Re: Feature Request</code>
+                        </p>
                     </td>
                 </tr>
             </table>
